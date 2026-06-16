@@ -383,7 +383,7 @@ function boot(payload){
   D=payload;
   initPeriod();
   document.getElementById('loading').style.display='none';
-  document.getElementById('app').style.display='block';
+  document.getElementById('app').style.display='';
   refreshMonthDependent();
   if(D.lastUpdated)document.getElementById('updated').textContent='Dati al '+new Date(D.lastUpdated).toLocaleString('it-IT');
 }
