@@ -324,7 +324,7 @@ function drawTrend(){
   var ctx=document.getElementById('cTrend');if(!ctx)return;
   if(charts.trend)charts.trend.destroy();
   charts.trend=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:vals.map(function(_,i){return i===curIdx?'#8B5E6B':'#d9c4cb';}),borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return eur(c.raw);}}}},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return eur(c.raw);}}}},
     scales:{y:{ticks:{callback:function(v){return v>=1000?(v/1000)+'k':v;},color:'#8a7d80',font:{size:10}},grid:{color:'#f0e9e5'}},x:{ticks:{color:'#8a7d80',font:{size:10}},grid:{display:false}}}}});
 }
 
