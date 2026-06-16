@@ -111,21 +111,19 @@ nav button.on{color:var(--rose);font-weight:600}
 .kpi.clk{cursor:pointer} .kpi.clk:active{transform:scale(.99)}
 .morebtn{width:100%;border:1px dashed var(--line);background:none;color:var(--rose);font-weight:600;font-size:13px;padding:9px;border-radius:10px;cursor:pointer;font-family:inherit;margin-top:2px}
 
-/* ===== Layout desktop (>=860px): stessi dati/grafici, solo disposizione diversa ===== */
+/* ===== Layout desktop (>=860px): a tab in alto, un dominio per volta (come l'originale) ===== */
 @media (min-width:860px){
   body{padding-bottom:28px}
-  nav{display:none}
-  .wrap{max-width:1180px;padding:0 24px}
+  .wrap{max-width:1100px;padding:0 24px}
   header{border-radius:0 0 22px 22px}
-  #app{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
-  #app .view{display:block !important}
-  #updated{grid-column:1 / -1}
-  #v-home{grid-column:1 / -1;display:grid;grid-template-columns:340px 1fr;column-gap:18px;align-items:start}
-  #v-home>.ai{grid-column:1;grid-row:1 / 4;margin:0}
-  #v-home>h2.sec{grid-column:2;grid-row:1;margin:0 4px 8px}
-  #v-home>.kpis{grid-column:2;grid-row:2;grid-template-columns:repeat(4,1fr)}
-  #v-home>.alert{grid-column:2;grid-row:3;margin-top:12px}
-  .chartbox{height:220px}
+  nav{position:static;height:auto;background:transparent;backdrop-filter:none;border-top:none;border-bottom:1px solid var(--line);max-width:1100px;margin:6px auto 16px;padding:0 24px;justify-content:flex-start;gap:2px;z-index:auto}
+  nav button{flex:0 0 auto;flex-direction:row;gap:8px;font-size:14px;padding:13px 18px;border-bottom:2px solid transparent;border-radius:0;padding-top:13px}
+  nav button.on{color:var(--rose);font-weight:600;border-bottom-color:var(--rose)}
+  nav button .ic{font-size:17px}
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .chartbox{height:240px}
+  .dgrid{grid-template-columns:1fr 1fr 1fr}
+  .acc-body .dgrid{gap:0 28px}
 }
 </style>
 </head>
@@ -140,6 +138,15 @@ nav button.on{color:var(--rose);font-weight:600}
     </div>
   </div>
 </header>
+
+<nav id="nav">
+  <button data-v="home" class="on"><span class="ic">&#9737;</span>Home</button>
+  <button data-v="ricavi"><span class="ic">&#8364;</span>Ricavi</button>
+  <button data-v="prodotti"><span class="ic">&#9632;</span>Prodotti</button>
+  <button data-v="magazzino"><span class="ic">&#9707;</span>Magazzino</button>
+  <button data-v="marketing"><span class="ic">&#9788;</span>Marketing</button>
+  <button data-v="salute"><span class="ic">&#9829;</span>Salute</button>
+</nav>
 
 <div class="wrap">
   <div id="loading" class="loading">Carico i dati…</div>
@@ -171,21 +178,10 @@ nav button.on{color:var(--rose);font-weight:600}
   </div>
 </div>
 
-<nav id="nav">
-  <button data-v="home" class="on"><span class="ic">&#9737;</span>Home</button>
-  <button data-v="ricavi"><span class="ic">&#8364;</span>Ricavi</button>
-  <button data-v="prodotti"><span class="ic">&#9632;</span>Prodotti</button>
-  <button data-v="magazzino"><span class="ic">&#9707;</span>Magazzino</button>
-  <button data-v="marketing"><span class="ic">&#9788;</span>Marketing</button>
-  <button data-v="salute"><span class="ic">&#9829;</span>Salute</button>
-</nav>
-
 <script>
 var D=null, curIdx=0, dataMonths=[], charts={};
 var MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 var DATA_URL='https://raw.githubusercontent.com/NoobHandbag/amimi-dashboard/master/ops-feed-8f21.json';
-var V1_URL='https://script.google.com/macros/s/AKfycbz191UCEsQjkoRtIVSA__LC6q2S89utKr4KGc3vws-EGn6sTisMaRdOujfAgTloyGYB/exec';
-var isMobile = /Android|iPhone|iPod|iPad|Mobile|Silk|BlackBerry|Opera Mini|IEMobile|Windows Phone/i.test(navigator.userAgent) || ((navigator.maxTouchPoints||0)>1 && window.innerWidth<900);
 var mqDesktop=window.matchMedia('(min-width:860px)');
 function isDesktop(){return mqDesktop.matches;}
 
@@ -481,12 +477,8 @@ function switchView(v){
 function refreshMonthDependent(){
   renderKPIs(); lowStockList();
   rendered={};
-  if(isDesktop()){
-    renderRicavi(); renderProdotti(); renderMagazzino(); renderMarketing(); renderSalute();
-  } else {
-    var active=document.querySelector('.view.on');
-    if(active){var v=active.id.replace('v-','');if(v!=='home')renderView(v);}
-  }
+  var active=document.querySelector('.view.on');
+  if(active){var v=active.id.replace('v-','');if(v!=='home')renderView(v);}
   document.getElementById('pLbl').textContent=MONTHS[curIdx]+' 2026';
   var pos=dataMonths.indexOf(curIdx);
   document.getElementById('pPrev').disabled=(pos<=0);
@@ -523,17 +515,12 @@ function boot(payload){
   if(D.lastUpdated)document.getElementById('updated').textContent='Dati al '+new Date(D.lastUpdated).toLocaleString('it-IT');
 }
 
-if(!isMobile){
-  var l=document.getElementById('loading'); if(l)l.textContent='Apro la dashboard desktop…';
-  window.location.replace(V1_URL);
-} else {
-  fetch(DATA_URL, {cache:'no-store'})
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(boot)
-    .catch(function(e){
-      document.getElementById('loading').innerHTML='<div class="err">Dati non ancora disponibili ('+e.message+'). Riprova tra qualche minuto.</div>';
-    });
-}
+fetch(DATA_URL, {cache:'no-store'})
+  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(boot)
+  .catch(function(e){
+    document.getElementById('loading').innerHTML='<div class="err">Dati non ancora disponibili ('+e.message+'). Riprova tra qualche minuto.</div>';
+  });
 </script>
 </body>
 </html>
