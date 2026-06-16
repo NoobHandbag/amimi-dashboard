@@ -1,0 +1,37 @@
+name: update-dashboard
+
+# Prende il payload dati dal backend Operations (server-side, dove Google non
+# blocca con cookie come fa su Chrome Android) e lo salva come ops-feed-8f21.json.
+# La pagina legge SOLO quel file via raw.githubusercontent, senza mai toccare
+# Google dal browser -> niente Drive lock sul telefono.
+
+on:
+  schedule:
+    - cron: '13,43 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-dashboard
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch dati dashboard dal backend Operations
+        run: |
+          curl -fsSL "https://script.google.com/macros/s/AKfycbz191UCEsQjkoRtIVSA__LC6q2S89utKr4KGc3vws-EGn6sTisMaRdOujfAgTloyGYB/exec?action=dashdata" -o ops-feed-8f21.json
+          node -e "const d=require('./ops-feed-8f21.json'); if(!d.DATA||!Array.isArray(d.DATA.ceAmimiMonthly)){console.error('payload invalido');process.exit(1);} console.log('ok: mesi='+d.DATA.ceAmimiMonthly.length+' prodotti='+d.DATA.products.length);"
+
+      - name: Commit se cambiato
+        run: |
+          git config user.name "amimi-dashboard-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ops-feed-8f21.json
+          git diff --staged --quiet || git commit -m "update dashboard data"
+          git push
