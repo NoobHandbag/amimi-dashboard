@@ -86,6 +86,23 @@ nav button.on{color:var(--rose);font-weight:600}
 .loading{text-align:center;color:var(--mut);padding:60px 0;font-size:14px}
 .muted{color:var(--mut);font-size:12px;text-align:center;margin:8px 0 2px}
 .err{background:var(--badbg);color:var(--bad);padding:12px;border-radius:10px;font-size:13px;margin-top:14px}
+
+/* ===== Layout desktop (>=860px): stessi dati/grafici, solo disposizione diversa ===== */
+@media (min-width:860px){
+  body{padding-bottom:28px}
+  nav{display:none}
+  .wrap{max-width:1180px;padding:0 24px}
+  header{border-radius:0 0 22px 22px}
+  #app{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:start}
+  #app .view{display:block !important}
+  #updated{grid-column:1 / -1}
+  #v-home{grid-column:1 / -1;display:grid;grid-template-columns:340px 1fr;column-gap:18px;align-items:start}
+  #v-home>.ai{grid-column:1;grid-row:1 / 4;margin:0}
+  #v-home>h2.sec{grid-column:2;grid-row:1;margin:0 4px 8px}
+  #v-home>.kpis{grid-column:2;grid-row:2;grid-template-columns:repeat(4,1fr)}
+  #v-home>.alert{grid-column:2;grid-row:3;margin-top:12px}
+  .chartbox{height:220px}
+}
 </style>
 </head>
 <body>
@@ -143,6 +160,8 @@ nav button.on{color:var(--rose);font-weight:600}
 var D=null, curIdx=0, dataMonths=[], charts={};
 var MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 var DATA_URL='https://raw.githubusercontent.com/NoobHandbag/amimi-dashboard/master/ops-feed-8f21.json';
+var mqDesktop=window.matchMedia('(min-width:860px)');
+function isDesktop(){return mqDesktop.matches;}
 
 function eur(v){return '€ ' + Math.round(v||0).toLocaleString('it-IT');}
 function eurK(v){v=v||0; return v>=10000 ? '€ '+(v/1000).toFixed(1).replace('.',',')+'k' : eur(v);}
@@ -327,8 +346,12 @@ function switchView(v){
 function refreshMonthDependent(){
   renderKPIs(); lowStockList();
   rendered={};
-  var active=document.querySelector('.view.on');
-  if(active){var v=active.id.replace('v-','');if(v!=='home')renderView(v);}
+  if(isDesktop()){
+    renderRicavi(); renderProdotti(); renderMagazzino(); renderMarketing(); renderSalute();
+  } else {
+    var active=document.querySelector('.view.on');
+    if(active){var v=active.id.replace('v-','');if(v!=='home')renderView(v);}
+  }
   document.getElementById('pLbl').textContent=MONTHS[curIdx]+' 2026';
   var pos=dataMonths.indexOf(curIdx);
   document.getElementById('pPrev').disabled=(pos<=0);
@@ -350,6 +373,7 @@ document.getElementById('aiBtn').onclick=function(){
 };
 
 document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){switchView(b.dataset.v);};});
+mqDesktop.addEventListener('change',function(){ if(D) refreshMonthDependent(); });
 
 function boot(payload){
   if(!payload || payload.error){
