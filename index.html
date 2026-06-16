@@ -184,6 +184,8 @@ nav button.on{color:var(--rose);font-weight:600}
 var D=null, curIdx=0, dataMonths=[], charts={};
 var MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
 var DATA_URL='https://raw.githubusercontent.com/NoobHandbag/amimi-dashboard/master/ops-feed-8f21.json';
+var V1_URL='https://script.google.com/macros/s/AKfycbz191UCEsQjkoRtIVSA__LC6q2S89utKr4KGc3vws-EGn6sTisMaRdOujfAgTloyGYB/exec';
+var isMobile = /Android|iPhone|iPod|iPad|Mobile|Silk|BlackBerry|Opera Mini|IEMobile|Windows Phone/i.test(navigator.userAgent) || ((navigator.maxTouchPoints||0)>1 && window.innerWidth<900);
 var mqDesktop=window.matchMedia('(min-width:860px)');
 function isDesktop(){return mqDesktop.matches;}
 
@@ -521,12 +523,17 @@ function boot(payload){
   if(D.lastUpdated)document.getElementById('updated').textContent='Dati al '+new Date(D.lastUpdated).toLocaleString('it-IT');
 }
 
-fetch(DATA_URL, {cache:'no-store'})
-  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-  .then(boot)
-  .catch(function(e){
-    document.getElementById('loading').innerHTML='<div class="err">Dati non ancora disponibili ('+e.message+'). Riprova tra qualche minuto.</div>';
-  });
+if(!isMobile){
+  var l=document.getElementById('loading'); if(l)l.textContent='Apro la dashboard desktop…';
+  window.location.replace(V1_URL);
+} else {
+  fetch(DATA_URL, {cache:'no-store'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(boot)
+    .catch(function(e){
+      document.getElementById('loading').innerHTML='<div class="err">Dati non ancora disponibili ('+e.message+'). Riprova tra qualche minuto.</div>';
+    });
+}
 </script>
 </body>
 </html>
