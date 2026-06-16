@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Amimì · Operations</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --rose:#8B5E6B; --dark:#2D2226; --accent:#C4956A;
+  --bg:#faf7f4; --card:#ffffff; --ink:#2D2226; --mut:#8a7d80; --line:#ece5e1;
+  --ok:#1d9e75; --okbg:#e6f5ef; --bad:#c0392b; --badbg:#fbecea; --warn:#b9791b; --warnbg:#fbf0dd;
+  --navh:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);padding-bottom:calc(var(--navh) + 16px);-webkit-font-smoothing:antialiased}
+.wrap{max-width:520px;margin:0 auto;padding:0 14px}
+
+header{background:var(--dark);color:#fff;padding:14px 0 16px;border-radius:0 0 18px 18px;margin-bottom:14px}
+.hrow{display:flex;align-items:center;justify-content:space-between}
+.brand{font-size:16px;font-weight:600;letter-spacing:.2px}
+.brand small{font-weight:400;opacity:.6;font-size:12px;display:block;letter-spacing:1px}
+.period{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border-radius:999px;padding:5px 6px}
+.period button{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;width:26px;height:26px;border-radius:50%;opacity:.85}
+.period button:disabled{opacity:.25}
+.period .lbl{font-size:13px;font-weight:600;min-width:74px;text-align:center}
+
+h2.sec{font-size:13px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.6px;margin:18px 4px 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px}
+.kpi .k-lbl{font-size:12px;color:var(--mut);margin-bottom:5px}
+.kpi .k-val{font-size:23px;font-weight:700;line-height:1.1}
+.kpi .k-val span{font-size:14px;font-weight:600;color:var(--mut)}
+.delta{font-size:12px;margin-top:5px;font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.delta.up{color:var(--ok)} .delta.down{color:var(--bad)} .delta.flat{color:var(--mut)}
+
+.ai{background:linear-gradient(135deg,#fbf3ee,#f6eef0);border:1px solid var(--line)}
+.ai .ai-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ai .ai-h b{font-size:14px}
+.ai .badge{margin-left:auto;font-size:11px;color:var(--mut)}
+.ai p{font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:10px}
+.btn{width:100%;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-pri{background:var(--rose);color:#fff}
+.btn-pri:active{transform:scale(.99)}
+
+.alert .a-h{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:14px;font-weight:600}
+.arow{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;border-bottom:1px solid var(--line)}
+.arow:last-child{border-bottom:none}
+.arow .nm{color:var(--ink)}
+.pill{font-weight:700;font-size:13px;padding:2px 9px;border-radius:999px}
+.pill.bad{background:var(--badbg);color:var(--bad)}
+.pill.warn{background:var(--warnbg);color:var(--warn)}
+
+.listrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.listrow:last-child{border-bottom:none}
+.listrow .rank{font-size:12px;color:var(--mut);width:18px;flex:none}
+.listrow .body{flex:1;min-width:0}
+.listrow .body .t{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.listrow .body .s{font-size:11px;color:var(--mut)}
+.listrow .num{font-size:13px;font-weight:600;text-align:right;flex:none}
+
+.split{display:flex;height:30px;border-radius:8px;overflow:hidden;margin:6px 0 10px}
+.split>div{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:600;min-width:34px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:1px}
+
+.minilabel{font-size:12px;color:var(--mut);margin-bottom:2px}
+.bigrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.bigrow .v{font-size:18px;font-weight:700}
+.chartbox{position:relative;height:180px;margin-top:6px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:12px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;gap:6px}
+.chip i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.chip i.g{background:var(--ok)} .chip i.r{background:var(--bad)} .chip i.y{background:var(--warn)}
+
+nav{position:fixed;left:0;right:0;bottom:0;height:var(--navh);background:rgba(255,255,255,.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;z-index:50}
+nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--mut);font-family:inherit;font-size:10px;cursor:pointer;padding-top:6px}
+nav button .ic{font-size:19px;line-height:1}
+nav button.on{color:var(--rose);font-weight:600}
+
+.view{display:none} .view.on{display:block}
+.loading{text-align:center;color:var(--mut);padding:60px 0;font-size:14px}
+.muted{color:var(--mut);font-size:12px;text-align:center;margin:8px 0 2px}
+.err{background:var(--badbg);color:var(--bad);padding:12px;border-radius:10px;font-size:13px;margin-top:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hrow">
+    <div class="brand">Amimì<small>OPERATIONS</small></div>
+    <div class="period">
+      <button id="pPrev" aria-label="Mese precedente">&#8249;</button>
+      <span class="lbl" id="pLbl">—</span>
+      <button id="pNext" aria-label="Mese successivo">&#8250;</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="loading" class="loading">Carico i dati…</div>
+  <div id="app" style="display:none">
+
+    <section class="view on" id="v-home">
+      <div class="card ai">
+        <div class="ai-h"><span style="font-size:17px">&#10024;</span><b>Sintesi AI</b><span class="badge" id="aiBadge">on-demand</span></div>
+        <p id="aiText">Premi per generare una lettura in 3 righe del mese: come va, l'anomalia, cosa guardare.</p>
+        <button class="btn btn-pri" id="aiBtn">Analizza il mese</button>
+      </div>
+
+      <h2 class="sec">Pulse</h2>
+      <div class="kpis" id="kpis"></div>
+
+      <div class="card alert" id="alertCard" style="margin-top:12px">
+        <div class="a-h"><span style="color:var(--bad)">&#9650;</span> Inventario sotto scorta</div>
+        <div id="lowStock"></div>
+      </div>
+    </section>
+
+    <section class="view" id="v-ricavi"></section>
+    <section class="view" id="v-prodotti"></section>
+    <section class="view" id="v-magazzino"></section>
+    <section class="view" id="v-marketing"></section>
+    <section class="view" id="v-salute"></section>
+
+    <p class="muted" id="updated"></p>
+  </div>
+</div>
+
+<nav id="nav">
+  <button data-v="home" class="on"><span class="ic">&#9737;</span>Home</button>
+  <button data-v="ricavi"><span class="ic">&#8364;</span>Ricavi</button>
+  <button data-v="prodotti"><span class="ic">&#9632;</span>Prodotti</button>
+  <button data-v="magazzino"><span class="ic">&#9707;</span>Magazzino</button>
+  <button data-v="marketing"><span class="ic">&#9788;</span>Marketing</button>
+  <button data-v="salute"><span class="ic">&#9829;</span>Salute</button>
+</nav>
+
+<script>
+var D=null, curIdx=0, dataMonths=[], charts={};
+var MONTHS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+var DATA_URL='https://raw.githubusercontent.com/NoobHandbag/amimi-dashboard/master/ops-feed-8f21.json';
+
+function eur(v){return '€ ' + Math.round(v||0).toLocaleString('it-IT');}
+function eurK(v){v=v||0; return v>=10000 ? '€ '+(v/1000).toFixed(1).replace('.',',')+'k' : eur(v);}
+function num(v){return Math.round(v||0).toLocaleString('it-IT');}
+function pct(v){return (Math.round((v||0)*10)/10).toString().replace('.',',')+'%';}
+
+function ce(i){return (D.DATA.ceAmimiMonthly||[])[i]||{};}
+function rev(i){return (D.DATA.revenueData||[])[i]||{};}
+
+function deltaHtml(cur,prev,fmt,invert){
+  if(prev===undefined||prev===null||prev===0){return '<div class="delta flat">&middot; nuovo</div>';}
+  var d=cur-prev; var up=d>=0; var good = invert ? !up : up;
+  var cls = d===0?'flat':(good?'up':'down');
+  var arr = d===0?'&middot;':(up?'&#9650;':'&#9660;');
+  var val = fmt ? fmt(Math.abs(d)) : num(Math.abs(d));
+  return '<div class="delta '+cls+'">'+arr+' '+val+'</div>';
+}
+
+function monthAds(i){
+  var label=MONTHS[i]; var mNum=i+1; var spend=0,val=0;
+  (D.META_ADS||[]).forEach(function(r){if(r.month===label){spend+=r.spend||0;val+=r.purchase_value||0;}});
+  (D.GOOGLE_ADS||[]).forEach(function(r){var m=parseInt(String(r.date||'').substring(5,7),10);if(m===mNum){spend+=r.cost||0;val+=r.convValue||0;}});
+  return {spend:spend,val:val,roas:spend>0?val/spend:0};
+}
+
+function renderKPIs(){
+  var c=ce(curIdx), p=ce(curIdx-1>=0?curIdx-1:curIdx);
+  var r=rev(curIdx), rp=rev(curIdx-1>=0?curIdx-1:curIdx);
+  var mc2pct = c.fatturatoNetto>0 ? (c.margine2/c.fatturatoNetto*100):0;
+  var mc2pctP = p.fatturatoNetto>0 ? (p.margine2/p.fatturatoNetto*100):0;
+  var ads=monthAds(curIdx), adsP=monthAds(curIdx-1>=0?curIdx-1:curIdx);
+  var hasPrev = curIdx>0;
+  var k=[
+    {lbl:'Fatturato netto', val:eur(c.fatturatoNetto), d:deltaHtml(c.fatturatoNetto,hasPrev?p.fatturatoNetto:0,eur)},
+    {lbl:'Margine MC2', val:pct(mc2pct), d:deltaHtml(mc2pct,hasPrev?mc2pctP:0,function(x){return pct(x);})},
+    {lbl:'Ordini online', val:num(r.shopifyOrders), d:deltaHtml(r.shopifyOrders,hasPrev?rp.shopifyOrders:0,num)},
+    {lbl:'ROAS Ads', val:(Math.round(ads.roas*10)/10).toString().replace('.',','), d:deltaHtml(ads.roas,hasPrev?adsP.roas:0,function(x){return (Math.round(x*10)/10).toString().replace('.',',');})}
+  ];
+  document.getElementById('kpis').innerHTML=k.map(function(x){
+    return '<div class="kpi"><div class="k-lbl">'+x.lbl+'</div><div class="k-val">'+x.val+'</div>'+x.d+'</div>';
+  }).join('');
+}
+
+function lowStockList(){
+  var low=(D.DATA.products||[]).filter(function(p){return p.stock<=3 && p.sold>0;})
+    .sort(function(a,b){return a.stock-b.stock;}).slice(0,8);
+  var el=document.getElementById('lowStock');
+  if(!low.length){el.innerHTML='<div class="arow"><span class="nm" style="color:var(--mut)">Tutto sopra scorta minima</span></div>';return;}
+  el.innerHTML=low.map(function(p){
+    var cls=p.stock<=1?'bad':'warn';
+    return '<div class="arow"><span class="nm">'+p.name+'</span><span class="pill '+cls+'">'+p.stock+'</span></div>';
+  }).join('');
+}
+
+function renderRicavi(){
+  var c=ce(curIdx), r=rev(curIdx);
+  var mc1pct=c.fatturatoNetto>0?(c.margine1/c.fatturatoNetto*100):0;
+  var mc2pct=c.fatturatoNetto>0?(c.margine2/c.fatturatoNetto*100):0;
+  var on=r.shopifyNetto||0, off=r.qromoNetto||0, gift=r.giftNetto||0;
+  var tot=on+off+gift||1;
+  var html=''
+    +'<h2 class="sec">Ricavi · '+MONTHS[curIdx]+'</h2>'
+    +'<div class="card">'
+      +'<div class="bigrow"><span class="minilabel">Fatturato netto</span><span class="v">'+eur(c.fatturatoNetto)+'</span></div>'
+      +'<div class="bigrow"><span class="minilabel">Margine MC1</span><span class="v">'+eur(c.margine1)+' <small style="color:var(--mut);font-size:12px">'+pct(mc1pct)+'</small></span></div>'
+      +'<div class="bigrow"><span class="minilabel">Margine MC2</span><span class="v">'+eur(c.margine2)+' <small style="color:var(--mut);font-size:12px">'+pct(mc2pct)+'</small></span></div>'
+    +'</div>'
+    +'<div class="card">'
+      +'<div class="minilabel" style="margin-bottom:6px">Canali (fatturato netto)</div>'
+      +'<div class="split">'
+        +'<div style="background:var(--rose);flex:'+on+'">'+(on/tot>0.12?eurK(on):'')+'</div>'
+        +'<div style="background:var(--accent);flex:'+off+'">'+(off/tot>0.12?eurK(off):'')+'</div>'
+        +'<div style="background:#b8a; flex:'+gift+'">'+(gift/tot>0.12?eurK(gift):'')+'</div>'
+      +'</div>'
+      +'<div class="legend"><span><i style="background:var(--rose)"></i>Shopify '+eur(on)+'</span><span><i style="background:var(--accent)"></i>Qromo '+eur(off)+'</span><span><i style="background:#b8a"></i>Gift '+eur(gift)+'</span></div>'
+    +'</div>'
+    +'<div class="card"><div class="minilabel" style="margin-bottom:4px">Fatturato netto · andamento</div><div class="chartbox"><canvas id="cTrend"></canvas></div></div>';
+  document.getElementById('v-ricavi').innerHTML=html;
+  drawTrend();
+}
+
+function drawTrend(){
+  var labels=[],vals=[];
+  for(var i=0;i<=curIdx;i++){labels.push(MONTHS[i]);vals.push(ce(i).fatturatoNetto||0);}
+  var ctx=document.getElementById('cTrend');if(!ctx)return;
+  if(charts.trend)charts.trend.destroy();
+  charts.trend=new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[{data:vals,backgroundColor:vals.map(function(_,i){return i===curIdx?'#8B5E6B':'#d9c4cb';}),borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return eur(c.raw);}}}},
+    scales:{y:{ticks:{callback:function(v){return v>=1000?(v/1000)+'k':v;},color:'#8a7d80',font:{size:10}},grid:{color:'#f0e9e5'}},x:{ticks:{color:'#8a7d80',font:{size:10}},grid:{display:false}}}}});
+}
+
+function renderProdotti(){
+  var ps=(D.DATA.products||[]).filter(function(p){return p.sold>0;});
+  var top=ps.slice(0,10);
+  var html='<h2 class="sec">Top prodotti · per fatturato</h2><div class="card">';
+  html+=top.map(function(p,i){
+    var mar=p.price>0?((p.price-p.cogsUnit)/p.price*100):0;
+    return '<div class="listrow"><span class="rank">'+(i+1)+'</span>'
+      +'<div class="body"><div class="t">'+p.name+'</div><div class="s">'+num(p.sold)+' venduti &middot; margine '+pct(mar)+' &middot; sell-through '+pct(p.sellThrough)+'</div></div>'
+      +'<div class="num">'+eur(p.revenue)+'</div></div>';
+  }).join('');
+  html+='</div><p class="muted">'+ps.length+' prodotti con vendite</p>';
+  document.getElementById('v-prodotti').innerHTML=html;
+}
+
+function renderMagazzino(){
+  var ps=D.DATA.products||[];
+  var invVal=ps.reduce(function(s,p){return s + (p.stock>0?p.stock*p.price:0);},0);
+  var units=ps.reduce(function(s,p){return s + (p.stock>0?p.stock:0);},0);
+  var low=ps.filter(function(p){return p.stock<=3 && p.sold>0;}).sort(function(a,b){return a.stock-b.stock;});
+  var neg=ps.filter(function(p){return p.stock<0;});
+  var html='<h2 class="sec">Magazzino</h2>'
+    +'<div class="kpis"><div class="kpi"><div class="k-lbl">Valore inventario</div><div class="k-val">'+eurK(invVal)+'</div></div>'
+    +'<div class="kpi"><div class="k-lbl">Pezzi a stock</div><div class="k-val">'+num(units)+'</div></div></div>'
+    +'<div class="card alert" style="margin-top:12px"><div class="a-h"><span style="color:var(--bad)">&#9650;</span> Sotto scorta ('+low.length+')</div>';
+  html+=(low.length?low.slice(0,12).map(function(p){var cls=p.stock<=1?'bad':'warn';return '<div class="arow"><span class="nm">'+p.name+'</span><span class="pill '+cls+'">'+p.stock+'</span></div>';}).join(''):'<div class="arow"><span class="nm" style="color:var(--mut)">Nessuno</span></div>');
+  html+='</div>';
+  if(neg.length){
+    html+='<div class="card alert"><div class="a-h"><span style="color:var(--bad)">&#9888;</span> Stock negativo ('+neg.length+')</div>';
+    html+=neg.map(function(p){return '<div class="arow"><span class="nm">'+p.name+'</span><span class="pill bad">'+p.stock+'</span></div>';}).join('');
+    html+='<p class="muted">Record acquisti mancanti — vedi note sistema</p></div>';
+  }
+  document.getElementById('v-magazzino').innerHTML=html;
+}
+
+function renderMarketing(){
+  var label=MONTHS[curIdx], mNum=curIdx+1;
+  var meta={s:0,v:0}, goog={s:0,v:0};
+  (D.META_ADS||[]).forEach(function(r){if(r.month===label){meta.s+=r.spend||0;meta.v+=r.purchase_value||0;}});
+  (D.GOOGLE_ADS||[]).forEach(function(r){var m=parseInt(String(r.date||'').substring(5,7),10);if(m===mNum){goog.s+=r.cost||0;goog.v+=r.convValue||0;}});
+  function roas(o){return o.s>0?(o.v/o.s):0;}
+  function block(nm,o){
+    var rs=roas(o); var cls=rs>=2.5?'up':(rs>=1.5?'flat':'down');
+    return '<div class="card"><div class="bigrow"><span class="minilabel">'+nm+'</span><span class="v">ROAS '+(Math.round(rs*10)/10).toString().replace('.',',')+'</span></div>'
+      +'<div class="legend"><span>Spesa <b style="color:var(--ink)">'+eur(o.s)+'</b></span><span>Ricavo attr. <b style="color:var(--ink)">'+eur(o.v)+'</b></span></div></div>';
+  }
+  var totS=meta.s+goog.s, totV=meta.v+goog.v, totR=totS>0?totV/totS:0;
+  var html='<h2 class="sec">Marketing · '+label+'</h2>'
+    +'<div class="kpis"><div class="kpi"><div class="k-lbl">Spesa totale</div><div class="k-val">'+eurK(totS)+'</div></div>'
+    +'<div class="kpi"><div class="k-lbl">ROAS combinato</div><div class="k-val">'+(Math.round(totR*10)/10).toString().replace('.',',')+'</div></div></div>'
+    +'<div style="height:12px"></div>'+block('Meta Ads',meta)+block('Google Ads',goog);
+  if(totS===0)html+='<p class="muted">Nessuna spesa registrata per '+label+'</p>';
+  document.getElementById('v-marketing').innerHTML=html;
+}
+
+function renderSalute(){
+  var ps=D.DATA.products||[];
+  var neg=ps.filter(function(p){return p.stock<0;}).length;
+  var noPrice=ps.filter(function(p){return p.sold>0 && p.price===0;}).length;
+  var meta=(D.META_ADS||[]).length, goog=(D.GOOGLE_ADS||[]).length;
+  var upd=D.lastUpdated?new Date(D.lastUpdated):null;
+  function chip(ok,txt){return '<span class="chip"><i class="'+(ok?'g':'r')+'"></i>'+txt+'</span>';}
+  function chipW(txt){return '<span class="chip"><i class="y"></i>'+txt+'</span>';}
+  var html='<h2 class="sec">Salute dati</h2><div class="card"><div class="chips">'
+    + chip(neg===0, neg===0?'Stock coerente':neg+' stock negativi')
+    + (noPrice===0?chip(true,'Prezzi completi'):chipW(noPrice+' senza prezzo'))
+    + chip(meta>0,'Meta Ads '+(meta>0?'ok':'assente'))
+    + chip(goog>0,'Google Ads '+(goog>0?'ok':'assente'))
+    + chip(ps.length>0, ps.length+' prodotti')
+    +'</div></div>';
+  if(upd)html+='<p class="muted">Dati aggiornati: '+upd.toLocaleString('it-IT')+'</p>';
+  document.getElementById('v-salute').innerHTML=html;
+}
+
+var rendered={};
+function renderView(v){
+  if(v==='ricavi')renderRicavi();
+  else if(v==='prodotti'){if(!rendered.prodotti){renderProdotti();rendered.prodotti=1;}}
+  else if(v==='magazzino')renderMagazzino();
+  else if(v==='marketing')renderMarketing();
+  else if(v==='salute')renderSalute();
+}
+
+function switchView(v){
+  document.querySelectorAll('.view').forEach(function(s){s.classList.remove('on');});
+  document.getElementById('v-'+v).classList.add('on');
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.dataset.v===v);});
+  renderView(v);
+  window.scrollTo(0,0);
+}
+
+function refreshMonthDependent(){
+  renderKPIs(); lowStockList();
+  rendered={};
+  var active=document.querySelector('.view.on');
+  if(active){var v=active.id.replace('v-','');if(v!=='home')renderView(v);}
+  document.getElementById('pLbl').textContent=MONTHS[curIdx]+' 2026';
+  var pos=dataMonths.indexOf(curIdx);
+  document.getElementById('pPrev').disabled=(pos<=0);
+  document.getElementById('pNext').disabled=(pos>=dataMonths.length-1);
+}
+
+function initPeriod(){
+  dataMonths=[];
+  (D.DATA.ceAmimiMonthly||[]).forEach(function(m,i){if((m.fatturatoNetto||0)>0)dataMonths.push(i);});
+  if(!dataMonths.length)dataMonths=[0];
+  curIdx=dataMonths[dataMonths.length-1];
+  document.getElementById('pPrev').onclick=function(){var p=dataMonths.indexOf(curIdx);if(p>0){curIdx=dataMonths[p-1];refreshMonthDependent();}};
+  document.getElementById('pNext').onclick=function(){var p=dataMonths.indexOf(curIdx);if(p<dataMonths.length-1){curIdx=dataMonths[p+1];refreshMonthDependent();}};
+}
+
+document.getElementById('aiBtn').onclick=function(){
+  document.getElementById('aiText').textContent='Sintesi AI in arrivo nel prossimo step. La struttura è già pronta per ospitarla qui.';
+  this.disabled=true; this.textContent='Disponibile a breve'; this.style.opacity=.6;
+};
+
+document.querySelectorAll('nav button').forEach(function(b){b.onclick=function(){switchView(b.dataset.v);};});
+
+function boot(payload){
+  if(!payload || payload.error){
+    document.getElementById('loading').innerHTML='<div class="err">Errore: '+((payload&&payload.error)||'nessun dato')+'</div>';
+    return;
+  }
+  D=payload;
+  initPeriod();
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
+  refreshMonthDependent();
+  if(D.lastUpdated)document.getElementById('updated').textContent='Dati al '+new Date(D.lastUpdated).toLocaleString('it-IT');
+}
+
+fetch(DATA_URL, {cache:'no-store'})
+  .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(boot)
+  .catch(function(e){
+    document.getElementById('loading').innerHTML='<div class="err">Dati non ancora disponibili ('+e.message+'). Riprova tra qualche minuto.</div>';
+  });
+</script>
+</body>
+</html>
