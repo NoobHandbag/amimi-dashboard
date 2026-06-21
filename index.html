@@ -389,7 +389,7 @@ function renderMagazzino(){
   html+='<h2 class="sec">Inventario completo ('+inv.length+')</h2>'
     +inv.map(function(x){
       var val=(x.giacenza>0?x.giacenza:0)*(x.prezzo||0);
-      var dg='<div class="dgrid">'+kv('Giacenza',num(x.giacenza))+kv('Venduto',num(x.venduto))+kv('Prezzo',eur(x.prezzo))+kv('Costo',eur(x.costo))+kv('Valore a stock',eur(val))+kv('Categoria',esc(x.item))+'</div>';
+      var dg='<div class="dgrid">'+kv('Giacenza Totale',num(x.giacenza))+kv('Venduto',num(x.venduto))+kv('Prezzo',eur(x.prezzo))+kv('Costo',eur(x.costo))+kv('Valore a stock',eur(val))+kv('Categoria',esc(x.item))+'</div>';
       return '<div class="acc">'+accHead(esc(x.name),'giac. '+num(x.giacenza)+' · venduti '+num(x.venduto),eur(val))+'<div class="acc-body">'+dg+'</div></div>';
     }).join('');
   html+='<h2 class="sec">Fornitori ('+forn.length+')</h2>'
