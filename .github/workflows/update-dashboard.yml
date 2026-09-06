@@ -25,9 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build feed (DATA_SOURCE = sheet oggi, supabase al cutover)
+      - name: Build feed (DATA_SOURCE = supabase dal 2026-09-06; 'sheet' solo come rollback esplicito)
         env:
-          DATA_SOURCE: ${{ vars.DATA_SOURCE || 'sheet' }}
+          DATA_SOURCE: ${{ vars.DATA_SOURCE || 'supabase' }}
         run: |
           node scripts/build-feed.mjs
           node -e "const d=require('./ops-feed-8f21.json'); if(!d.DATA||!Array.isArray(d.DATA.ceAmimiMonthly)){console.error('payload invalido');process.exit(1);} console.log('ok: mesi='+d.DATA.ceAmimiMonthly.length+' prodotti='+d.DATA.products.length);"
