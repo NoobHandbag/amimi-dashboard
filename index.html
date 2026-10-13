@@ -275,6 +275,7 @@ function renderRicavi(){
     +kv('− Commissioni',eur(c.commissioni),'neg')
     +kv('− Logistica',eur(c.logistica),'neg')
     +kv('− Resi',eur(c.resi),'neg')
+    +kv('− Compenso soci',eur(c.compensoSoci||0),'neg')
     +kv('= Margine MC1',eur(c.margine1)+' <small style="color:var(--mut)">'+pct(mc1pct)+'</small>','tot')
     +kv('− Salari',eur(c.salari),'neg')
     +kv('− Tasse',eur(c.tasse),'neg')

@@ -47,7 +47,7 @@ function ceToMonthly(rows) {
   const byMonth = new Map(rows.map((r) => [Number(r.month), r]));
   return MESI.map((label, i) => {
     const r = byMonth.get(i + 1);
-    if (!r) return { month: label, fatturatoLordo: 0, fatturatoNetto: 0, cogs: 0, packaging: 0, commissioni: 0, logistica: 0, resi: 0, margine1: 0, salari: 0, tasse: 0, logisticaFissa: 0, opex: 0, eventi: 0, marketing: 0, margine2: 0 };
+    if (!r) return { month: label, fatturatoLordo: 0, fatturatoNetto: 0, cogs: 0, packaging: 0, commissioni: 0, logistica: 0, resi: 0, compensoSoci: 0, margine1: 0, salari: 0, tasse: 0, logisticaFissa: 0, opex: 0, eventi: 0, marketing: 0, margine2: 0 };
     return {
       month: label,
       // identita' finanziaria del progetto: Fatturato Netto = Lordo / 1.22 (regge anche i mesi
@@ -59,6 +59,8 @@ function ceToMonthly(rows) {
       commissioni: r2(Math.abs(N(r.commissioni))),
       logistica: r2(Math.abs(N(r.logistica_var))),
       resi: r2(Math.abs(N(r.resi))),
+      // migr 0154 di amimi-app: costo variabile, gia' dentro mc1/mc2 delle viste
+      compensoSoci: r2(Math.abs(N(r.compenso_soci))),
       margine1: r2(r.mc1),
       salari: r2(Math.abs(N(r.salari))),
       tasse: r2(Math.abs(N(r.tasse))),
